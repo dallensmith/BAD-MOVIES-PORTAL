@@ -799,6 +799,24 @@ class WordPressService {
       )
     );
 
+    // Handle experiment image with proper source_url fetching
+    let posterImage: string | undefined;
+    
+    if (typeof podsExperiment.experiment_image === 'string' && podsExperiment.experiment_image) {
+      // Handle string URL case
+      posterImage = await this.getMediaSourceUrl(podsExperiment.experiment_image);
+    } else if (typeof podsExperiment.experiment_image === 'object' && podsExperiment.experiment_image) {
+      // Handle object case (WordPress media object)
+      const imageObj = podsExperiment.experiment_image as { url?: string; guid?: string; source_url?: string };
+      if (imageObj.url) {
+        posterImage = await this.getMediaSourceUrl(imageObj.url);
+      } else if (imageObj.guid) {
+        posterImage = await this.getMediaSourceUrl(imageObj.guid);
+      } else if (imageObj.source_url) {
+        posterImage = imageObj.source_url;
+      }
+    }
+
     return {
       id: podsExperiment.id,
       number: parseInt(podsExperiment.experiment_number),
@@ -808,7 +826,7 @@ class WordPressService {
       host,
       platforms,
       notes: podsExperiment.experiment_notes,
-      posterImage: typeof podsExperiment.experiment_image === 'string' ? podsExperiment.experiment_image : undefined,
+      posterImage,
       experimentImageId: typeof podsExperiment.experiment_image === 'number' ? podsExperiment.experiment_image : undefined,
       status: 'Completed',
       movies,
