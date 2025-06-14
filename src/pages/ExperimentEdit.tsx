@@ -740,5 +740,3 @@ const ExperimentEdit: React.FC = () => {
 };
 
 export default ExperimentEdit;
-
-// Test comment to demonstrate Git workflow
