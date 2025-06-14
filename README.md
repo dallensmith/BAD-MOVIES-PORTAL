@@ -1,54 +1,94 @@
-# React + TypeScript + Vite
+# Bad Movies Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + TypeScript admin portal for managing "bad movie viewing experiments" - community events where groups of people watch intentionally bad movies together.
 
-Currently, two official plugins are available:
+## 🎬 Project Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The Bad Movies Portal is a modern web application that serves as an admin interface for managing movie experiments, integrating with WordPress (using Pods) as a backend CMS and The Movie Database (TMDb) for rich movie data.
 
-## Expanding the ESLint configuration
+### Key Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **📱 Modern UI**: Built with React 18, TypeScript, and Tailwind CSS
+- **🎞️ Movie Management**: Search and add movies from TMDb with rich metadata
+- **🎪 Experiment Management**: Create and edit movie viewing experiments with platforms, hosts, and participants
+- **👥 User Management**: WordPress user integration for host assignment
+- **🔗 Platform Integration**: Dynamic platform management (Bigscreen VR, Vimeo, etc.)
+- **🖼️ Image Optimization**: Optimole CDN integration for movie posters
+- **📊 Auto-numbering**: Sequential experiment numbering with smart auto-increment
+- **🔗 Permalink Management**: Automatic slug generation with manual override support
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 🚀 Technology Stack
+
+- **Frontend**: React 18 + TypeScript + Vite
+- **Styling**: Tailwind CSS with custom components
+- **Backend**: WordPress REST API + Pods Plugin
+- **Movie Data**: The Movie Database (TMDb) API
+- **Authentication**: WordPress Basic Auth / JWT
+- **Image CDN**: Optimole WordPress plugin
+- **Version Control**: Git + GitHub
+
+## 🛠️ Development Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/dallensmith/BAD-MOVIES-PORTAL.git
+   cd BAD-MOVIES-PORTAL
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Environment Configuration**:
+   Create a `.env` file with your WordPress and TMDb credentials:
+   ```env
+   VITE_WORDPRESS_URL=your-wordpress-site.com
+   VITE_WORDPRESS_API_URL=your-wordpress-site.com/wp-json
+   VITE_WP_USERNAME=your-username
+   VITE_WP_PASSWORD=your-app-password
+   VITE_TMDB_API_KEY=your-tmdb-api-key
+   ```
+
+4. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+## 📁 Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── auth/           # Authentication components
+│   ├── experiment/     # Experiment-related components
+│   ├── layout/         # Layout components (Header, Layout)
+│   ├── movie/          # Movie management components
+│   └── ui/             # Base UI components (Button, Modal, etc.)
+├── hooks/              # Custom React hooks
+├── pages/              # Page components
+├── services/           # API services (WordPress, TMDb)
+├── store/              # State management
+├── types/              # TypeScript type definitions
+└── utils/              # Utility functions
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🔧 Build & Deployment
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Development**: `npm run dev`
+- **Build**: `npm run build`
+- **Preview**: `npm run preview`
+- **Lint**: `npm run lint`
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## 📖 Documentation
+
+- **[AI Instructions](AI_INSTRUCTIONS.md)**: Comprehensive guide for AI-assisted development
+- **[Setup Guide](README_SETUP.md)**: Detailed setup instructions
+
+## 🤝 Contributing
+
+This project uses Git for version control with AI-assisted development practices. See `AI_INSTRUCTIONS.md` for detailed collaboration guidelines.
+
+## 📄 License
+
+Private project - All rights reserved.
