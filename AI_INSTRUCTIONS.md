@@ -154,15 +154,25 @@ async getEventPlatforms(): Promise<EventPlatform[]> {
      - `src/services/wordpress.service.ts` - Added async media fetching
      - `src/types/index.ts` - Added `_embedded` field to WordPressPodsMovie type
 
-2. **Async Method Conversion**
+2. **Experiment Image Display (Fixed - June 2025)**
+   - **Problem**: Experiment images not displaying in edit page despite existing in WordPress
+   - **Root Cause**: WordPress Pods returns `experiment_image` as object (not string), original code only checked `typeof === 'string'`
+   - **Solution**: Enhanced `convertPodsExperimentToApp()` to handle both string and object formats with proper Optimole CDN fetching
+   - **Debug Process**: Used console logging to identify data structure mismatch
+   - **Files Modified**: 
+     - `src/services/wordpress.service.ts` - Added object handling for experiment images
+     - Support for `url`, `guid`, and `source_url` properties in image objects
+   - **Testing**: Verified experiment images now display correctly in edit form with CDN optimization
+
+3. **Async Method Conversion**
    - Made `convertPodsMovieToApp()` and `convertPodsExperimentToApp()` async to support media API calls
    - Updated all calling methods to use `Promise.all()` and `await`
 
-3. **TypeScript Type Safety**
+4. **TypeScript Type Safety**
    - Added proper typing for WordPress embedded media data structure
    - Ensured all image handling code is type-safe
 
-4. **Dynamic Platform Management (MAJOR FIX)**
+5. **Dynamic Platform Management (MAJOR FIX)**
    - **Problem**: Platform lists were hardcoded in frontend, not reflecting WordPress Pods configuration
    - **Root Cause**: No integration with Pods API for dynamic field configuration
    - **Solution**: Implemented dynamic fetching from `/wp-json/pods/v1/pods/experiment/fields/event_location`
@@ -174,7 +184,7 @@ async getEventPlatforms(): Promise<EventPlatform[]> {
      - `src/pages/ExperimentEdit.tsx` - Added dynamic platform selection with checkboxes
    - **Testing Verified**: Changing platform from "test" to "Vimeo" in WordPress immediately appeared in portal
 
-5. **User Management Integration**
+6. **User Management Integration**
    - **Enhanced**: Host dropdown now loads all WordPress users dynamically
    - **Auto-selection**: Current authenticated user is automatically selected as default host
    - **Real-time Loading**: Added proper loading and error states for user fetching
@@ -182,7 +192,7 @@ async getEventPlatforms(): Promise<EventPlatform[]> {
      - `src/components/experiment/ExperimentForm.tsx` - User dropdown with API integration
      - `src/pages/ExperimentEdit.tsx` - Editable user selection
 
-6. **Experiment Number Auto-Generation (NEW FEATURE)**
+7. **Experiment Number Auto-Generation (NEW FEATURE)**
    - **Feature**: Automatic experiment number assignment and title generation
    - **Implementation**: Added `getNextExperimentNumber()` method to fetch highest existing experiment number
    - **Auto-increment Logic**: Scans all existing experiments, finds highest number, adds 1
@@ -196,7 +206,7 @@ async getEventPlatforms(): Promise<EventPlatform[]> {
      - `src/pages/ExperimentEdit.tsx` - Editable experiment number with title synchronization
    - **Data Flow**: `experiment_number` (WordPress string) ↔ `number` (app integer) ↔ `experimentNumber` (form string)
 
-7. **Permalink Slug Management (NEW FEATURE)**
+8. **Permalink Slug Management (NEW FEATURE)**
    - **Feature**: Automatic permalink slug generation for clean URLs
    - **Pattern**: `experiment-001`, `experiment-002`, etc.
    - **Auto-synchronization**: Slug updates when experiment number changes
@@ -209,7 +219,7 @@ async getEventPlatforms(): Promise<EventPlatform[]> {
      - `src/services/wordpress.service.ts` - Slug handling in `saveExperiment()`
      - `src/pages/NewExperiment.tsx` - Slug data passing to save function
 
-8. **Platform Selection Behavior Fix (UX IMPROVEMENT)**
+9. **Platform Selection Behavior Fix (UX IMPROVEMENT)**
    - **Problem**: Edit experiment page was defaulting to "Bigscreen VR" selection instead of showing actual experiment platforms
    - **Root Cause**: Missing platform selection UI in edit page, incorrect default behavior
    - **Solution**: Added proper platform selection with existing experiment data
@@ -220,13 +230,13 @@ async getEventPlatforms(): Promise<EventPlatform[]> {
    - **Files Modified**:
      - `src/pages/ExperimentEdit.tsx` - Added platform selection UI with correct behavior
 
-9. **Movie Management Enhancement (UX IMPROVEMENT)**
-   - **Feature**: Added remove movie functionality to experiment edit page
-   - **Safety**: Confirmation dialog prevents accidental removal
-   - **UI Design**: Remove button (X) placed with safe spacing from edit button (pencil)
-   - **User Experience**: Clear visual separation between edit and remove actions
-   - **Files Modified**:
-     - `src/pages/ExperimentEdit.tsx` - Added `handleRemoveMovie()` function and remove buttons
+10. **Movie Management Enhancement (UX IMPROVEMENT)**
+    - **Feature**: Added remove movie functionality to experiment edit page
+    - **Safety**: Confirmation dialog prevents accidental removal
+    - **UI Design**: Remove button (X) placed with safe spacing from edit button (pencil)
+    - **User Experience**: Clear visual separation between edit and remove actions
+    - **Files Modified**:
+      - `src/pages/ExperimentEdit.tsx` - Added `handleRemoveMovie()` function and remove buttons
 
 ## File Structure
 ```
@@ -678,149 +688,3 @@ The biggest lessons learned were:
 - **No real-time chat/reactions** during experiments
 - **No platform API integrations** (platforms are categorical data only)
 - **No automatic "bad movie" filtering** (human curation required)
-
-## LATEST DEVELOPMENT SESSION SUMMARY
-
-### 🎯 SESSION OBJECTIVES ACHIEVED:
-In the most recent development session, all requested admin UI improvements were successfully implemented:
-
-1. **Dynamic Platform Configuration**: Removed all hardcoded platform lists and implemented real-time fetching from WordPress Pods API
-2. **User Management Enhancement**: Added dynamic user loading with current user auto-selection
-3. **Experiment Number Automation**: Implemented auto-generation of sequential experiment numbers from existing data
-4. **Permalink Slug Integration**: Added automatic slug generation with number synchronization
-5. **Platform Selection UX**: Fixed behavior differences between new and edit experiment forms
-6. **Movie Management**: Added safe movie removal with confirmation dialog
-7. **Code Quality**: Updated all TypeScript types and ensured proper error handling throughout
-
-### 🔧 KEY FILES MODIFIED:
-- `src/components/experiment/ExperimentForm.tsx` - Dynamic data loading, number/slug generation
-- `src/pages/ExperimentEdit.tsx` - Platform selection UI, movie removal, field synchronization  
-- `src/services/wordpress.service.ts` - Dynamic platform fetching, experiment number logic
-- `src/types/index.ts` - Added experimentNumber and slug fields
-- `src/pages/NewExperiment.tsx` - Updated to pass new fields
-- `AI_INSTRUCTIONS.md` - Comprehensive documentation updates
-
-### 🧪 TESTING METHODOLOGY:
-- Real-time testing with WordPress admin changes
-- Browser console verification of API calls
-- UI testing for all new features
-- TypeScript error resolution
-- Cross-functionality testing (number ↔ title ↔ slug sync)
-
-### 📊 FINAL STATE:
-The Bad Movies Portal is now a **production-ready admin interface** that dynamically adapts to WordPress backend changes, provides excellent user experience for experiment management, and maintains data integrity across all operations. All critical requirements have been met and thoroughly tested.
-
-## Git Version Control & AI Collaboration Guidelines
-
-### 🎯 **REPOSITORY STATUS**
-This project is version-controlled with Git and hosted on GitHub:
-- **Repository**: https://github.com/dallensmith/BAD-MOVIES-PORTAL
-- **Branch**: `main` (default)
-- **User**: dallensmith <dallensmith@gmail.com>
-
-### 📋 **Git Workflow for AI Assistants**
-
-#### **MANDATORY: Always Check Git Status First**
-```bash
-git status                  # Check current state
-git log --oneline          # See recent commits
-git diff                   # See what changed
-```
-
-#### **Standard Workflow (3-Step Process)**
-```bash
-# 1. Stage changes
-git add .                  # Add all files
-git add filename.tsx       # Add specific file
-
-# 2. Commit with descriptive message
-git commit -m "Clear description of what changed"
-
-# 3. Push to GitHub
-git push
-```
-
-#### **When to Commit (CRITICAL)**
-- ✅ **After fixing any bug** - Create restore point
-- ✅ **After completing a feature** - Document progress
-- ✅ **Before major refactoring** - Safety backup
-- ✅ **After layout improvements** - Track UI changes
-- ✅ **Before experimental changes** - Enable rollback
-- ✅ **At end of work session** - Preserve progress
-
-#### **Commit Message Guidelines**
-- ✅ **Descriptive**: "Fix: ExperimentEdit form validation error"
-- ✅ **Action-oriented**: "Add: Compact grid layout to ExperimentEdit"
-- ✅ **Component-specific**: "Update: Platform fetching in wordpress.service"
-- ❌ **Vague**: "fix stuff", "changes", "update"
-
-### 🛠️ **Problem Solving with Git**
-
-#### **When Things Break**
-```bash
-# See what changed recently
-git log --oneline -n 10
-
-# Compare with working version
-git diff HEAD~1 filename.tsx
-
-# Restore previous working version
-git checkout HEAD~1 -- filename.tsx
-git commit -m "Restore: Revert filename.tsx to working state"
-```
-
-#### **Finding When Issues Were Introduced**
-```bash
-# See changes to specific file
-git log --oneline src/pages/ExperimentEdit.tsx
-
-# See exact changes in a commit
-git show commit-hash
-
-# Compare two versions
-git diff commit1..commit2 filename.tsx
-```
-
-### 🤖 **AI Assistant Collaboration Benefits**
-
-#### **Context Preservation**
-- **Full project history** available to any AI assistant
-- **Understand previous decisions** through commit messages
-- **See evolution** of features and fixes
-- **Track successful patterns** for reuse
-
-#### **Recovery Capabilities**
-- **Instant restoration** of any previous working state
-- **File-level recovery** without losing other changes
-- **Experimental branches** for testing without risk
-- **Rollback complex changes** if they cause issues
-
-#### **Handoff Between Sessions**
-- **Complete development context** preserved
-- **Work continuity** across different AI assistants
-- **Change tracking** shows what worked and what didn't
-- **Learning from history** prevents repeating mistakes
-
-### ⚠️ **CRITICAL Git Rules for AI Assistants**
-
-1. **ALWAYS commit before major changes** - Create restore points
-2. **NEVER leave work uncommitted** - Preserve progress
-3. **USE descriptive commit messages** - Help future AI understand context
-4. **CHECK git status regularly** - Understand current state
-5. **COMMIT working states** - Even if incomplete, working code should be saved
-6. **PUSH frequently** - Backup to GitHub for safety
-
-### 🔄 **Quick Reference Commands**
-```bash
-# Useful aliases (already configured)
-git st                     # git status
-git cm "message"          # git commit -m "message"
-git br                    # git branch
-git co                    # git checkout
-
-# Emergency recovery
-git stash                 # Temporarily save current changes
-git stash pop             # Restore stashed changes
-git reset --hard HEAD     # Discard all local changes (DANGER!)
-git reflog                # Find lost commits
-```
