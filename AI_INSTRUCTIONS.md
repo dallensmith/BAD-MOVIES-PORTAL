@@ -158,11 +158,12 @@ async getEventPlatforms(): Promise<EventPlatform[]> {
    - **Problem**: Experiment images not displaying in edit page despite existing in WordPress
    - **Root Cause**: WordPress Pods returns `experiment_image` as object (not string), original code only checked `typeof === 'string'`
    - **Solution**: Enhanced `convertPodsExperimentToApp()` to handle both string and object formats with proper Optimole CDN fetching
-   - **Debug Process**: Used console logging to identify data structure mismatch
+   - **Debug Process**: Used console logging to identify data structure mismatch between expected string and actual object
+   - **Object Handling**: Added support for `url`, `guid`, and `source_url` properties in WordPress media objects
    - **Files Modified**: 
-     - `src/services/wordpress.service.ts` - Added object handling for experiment images
-     - Support for `url`, `guid`, and `source_url` properties in image objects
+     - `src/services/wordpress.service.ts` - Added comprehensive object/string handling for experiment images
    - **Testing**: Verified experiment images now display correctly in edit form with CDN optimization
+   - **Key Learning**: WordPress Pods can return media fields in different formats - always handle both cases
 
 3. **Async Method Conversion**
    - Made `convertPodsMovieToApp()` and `convertPodsExperimentToApp()` async to support media API calls
