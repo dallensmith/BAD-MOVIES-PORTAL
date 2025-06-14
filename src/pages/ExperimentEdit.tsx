@@ -4,7 +4,7 @@ import { ArrowLeft, Save, Trash2, Edit2, X } from 'lucide-react';
 import { Button, Input } from '../components/ui';
 import { MovieEditModal } from '../components/movie';
 import WordPressServiceSingleton from '../services/wordpress.singleton';
-import type { Experiment, Movie, EventPlatform } from '../types';
+import type { Experiment, Movie, EventPlatform, WordPressUser } from '../types';
 
 const wordpressService = WordPressServiceSingleton.getInstance();
 
@@ -22,7 +22,7 @@ const ExperimentEdit: React.FC = () => {
   const [isMovieModalOpen, setIsMovieModalOpen] = useState(false);
 
   // WordPress users state
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<WordPressUser[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [userLoadError, setUserLoadError] = useState<string | null>(null);
 
@@ -35,12 +35,12 @@ const ExperimentEdit: React.FC = () => {
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
 
   // Helper functions for user display
-  const getUserDisplayName = (user: any): string => {
-    return user?.name || user?.display_name || user?.displayName || user?.username || user?.login || `User ${user?.id || 'Unknown'}`;
+  const getUserDisplayName = (user: WordPressUser): string => {
+    return user?.name || user?.displayName || user?.username || user?.login || `User ${user?.id || 'Unknown'}`;
   };
 
-  const getUserUsername = (user: any): string => {
-    return user?.username || user?.login || user?.slug || user?.user_login || 'no-username';
+  const getUserUsername = (user: WordPressUser): string => {
+    return user?.username || user?.login || user?.slug || 'no-username';
   };
 
   // Platform helper functions
