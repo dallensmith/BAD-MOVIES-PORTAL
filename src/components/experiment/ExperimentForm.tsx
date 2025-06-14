@@ -244,6 +244,7 @@ const ExperimentForm: React.FC<ExperimentFormProps> = ({
       const experimentData: ExperimentFormData = {
         ...formData,
         movieIds: selectedMovies.map(movie => movie.tmdbId),
+        movieSelections: selectedMovies, // Pass the full movie selection data
       };
 
       if (onSave) {

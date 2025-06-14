@@ -298,6 +298,11 @@ class WordPressService {
       experimentData.event_location = experiment.platforms.map(p => p.name);
     }
 
+    // Add experiment movies if provided (WordPress expects array of movie IDs)
+    if (experiment.movies && experiment.movies.length > 0) {
+      experimentData.experiment_movies = experiment.movies.map(movie => movie.wordpressId || movie.id);
+    }
+
     try {
       console.log(`${method.toUpperCase()}ing experiment to ${endpoint}:`, experimentData);
       
@@ -793,11 +798,20 @@ class WordPressService {
       updatedAt: new Date().toISOString()
     }));
 
-    const movies: Movie[] = await Promise.all(
-      podsExperiment.experiment_movies.map(movie => 
-        this.convertPodsMovieToApp(movie)
-      )
-    );
+    // Handle experiment movies safely
+    let movies: Movie[] = [];
+    if (Array.isArray(podsExperiment.experiment_movies) && podsExperiment.experiment_movies.length > 0) {
+      try {
+        movies = await Promise.all(
+          podsExperiment.experiment_movies.map(movie => 
+            this.convertPodsMovieToApp(movie)
+          )
+        );
+      } catch (error) {
+        console.warn('Failed to convert experiment movies:', error);
+        movies = []; // Fallback to empty array
+      }
+    }
 
     // Handle experiment image with proper source_url fetching
     let posterImage: string | undefined;

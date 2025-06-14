@@ -9,13 +9,16 @@ The Bad Movies Portal is a modern web application that serves as an admin interf
 ### Key Features
 
 - **📱 Modern UI**: Built with React 18, TypeScript, and Tailwind CSS
+- **🔍 Advanced Movie Search**: Intelligent search with decade, genre, and content filtering
 - **🎞️ Movie Management**: Search and add movies from TMDb with rich metadata
+- **🔞 Adult Content Control**: Clear labeling and filtering for adult content
 - **🎪 Experiment Management**: Create and edit movie viewing experiments with platforms, hosts, and participants
 - **👥 User Management**: WordPress user integration for host assignment
 - **🔗 Platform Integration**: Dynamic platform management (Bigscreen VR, Vimeo, etc.)
-- **🖼️ Image Optimization**: Optimole CDN integration for movie posters
+- **🖼️ Image Optimization**: Optimole CDN integration for movie posters with fallback handling
 - **📊 Auto-numbering**: Sequential experiment numbering with smart auto-increment
 - **🔗 Permalink Management**: Automatic slug generation with manual override support
+- **⚡ Hybrid Search Strategy**: Combines TMDb search and discover APIs for optimal results
 
 ## 🚀 Technology Stack
 
@@ -79,6 +82,24 @@ src/
 - **Build**: `npm run build`
 - **Preview**: `npm run preview`
 - **Lint**: `npm run lint`
+
+## 🆕 Recent Updates
+
+### v2.0 - Advanced Search & Filtering (December 2025)
+- **🔍 Intelligent Search**: Complete overhaul of movie search with hybrid API strategy
+- **📅 Decade Filtering**: Accurate date range filtering (1980s shows movies from 1980-1989)
+- **🎭 Genre Filtering**: Client-side genre matching for precise search+filter combinations
+- **🔞 Adult Content Management**: Clear "ADULT" badges and filtering controls
+- **🛠️ Error Resolution**: Fixed search crashes and image loading issues
+- **📱 UI Improvements**: Enhanced movie cards, better error handling, improved placeholders
+- **⚡ Performance**: Optimized API calls and reduced unnecessary requests
+
+### Technical Improvements:
+- Hybrid search strategy combining TMDb search and discover endpoints
+- Enhanced TypeScript type safety and error handling
+- Fixed broken image placeholders in selected movies list
+- Improved adult content visual indicators
+- Better handling of missing movie posters
 
 ## 📖 Documentation
 

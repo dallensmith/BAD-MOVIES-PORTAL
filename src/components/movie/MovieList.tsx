@@ -2,6 +2,11 @@ import { X } from 'lucide-react';
 import { Button } from '../ui';
 import { clsx } from 'clsx';
 import type { MovieSelectionData } from '../../types';
+import TMDbService from '../../services/tmdb.service';
+import { config } from '../../utils/config';
+
+// Create tmdbService instance for image handling
+const tmdbService = new TMDbService(config.tmdb);
 
 interface MovieListProps {
   movies: MovieSelectionData[];
@@ -16,6 +21,11 @@ const MovieList: React.FC<MovieListProps> = ({
   isEditable = true,
   className,
 }) => {
+  // Helper function to get TMDb image URL
+  const getImageUrl = (path: string) => {
+    return tmdbService.getImageUrl(path, 'w300');
+  };
+
   if (movies.length === 0) {
     return (
       <div className={clsx('text-center py-8 border-2 border-dashed border-secondary-300 rounded-lg', className)}>
@@ -41,14 +51,29 @@ const MovieList: React.FC<MovieListProps> = ({
           >
             {/* Movie Poster */}
             <div className="flex-shrink-0">
-              <img
-                src={movie.posterPath}
-                alt={movie.title}
-                className="w-16 h-24 object-cover rounded-md bg-secondary-100"
-                onError={(e) => {
-                  e.currentTarget.src = '/placeholder-poster.png';
-                }}
-              />
+              {movie.posterPath ? (
+                <img
+                  src={getImageUrl(movie.posterPath)}
+                  alt={movie.title}
+                  className="w-16 h-24 object-cover rounded-md bg-secondary-100"
+                  onError={(e) => {
+                    // Hide the broken image and show placeholder
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+              ) : null}
+              {/* Placeholder for missing poster */}
+              <div 
+                className={clsx(
+                  'w-16 h-24 bg-secondary-200 rounded-md flex items-center justify-center text-secondary-500 text-xs',
+                  movie.posterPath ? 'hidden' : 'flex'
+                )}
+              >
+                <div className="text-center">
+                  🎬<br/>No<br/>Image
+                </div>
+              </div>
             </div>
 
             {/* Movie Details */}

@@ -54,6 +54,72 @@ class TMDbService {
   }
 
   /**
+   * Advanced movie search with filtering options
+   */
+  async searchMoviesAdvanced(
+    query: string,
+    options: {
+      page?: number;
+      includeAdult?: boolean;
+      year?: number;
+      primaryReleaseYear?: number;
+      region?: string;
+    } = {}
+  ): Promise<TMDbMovieSearchResult> {
+    const params: any = {
+      query: query.trim(),
+      page: options.page || 1,
+      include_adult: options.includeAdult || false,
+      language: 'en-US',
+    };
+
+    if (options.year) params.year = options.year;
+    if (options.primaryReleaseYear) params.primary_release_year = options.primaryReleaseYear;
+    if (options.region) params.region = options.region;
+
+    const response: AxiosResponse<TMDbMovieSearchResult> = await this.api.get('/search/movie', {
+      params,
+    });
+
+    return response.data;
+  }
+
+  /**
+   * Discover movies with advanced filtering
+   */
+  async discoverMovies(options: {
+    page?: number;
+    includeAdult?: boolean;
+    primaryReleaseYear?: number;
+    primaryReleaseDateGte?: string; // YYYY-MM-DD
+    primaryReleaseDateLte?: string; // YYYY-MM-DD
+    withGenres?: string; // comma separated genre IDs
+    sortBy?: 'popularity.desc' | 'popularity.asc' | 'release_date.desc' | 'release_date.asc' | 'vote_average.desc' | 'vote_average.asc';
+    voteAverageGte?: number;
+    voteCountGte?: number;
+  } = {}): Promise<TMDbMovieSearchResult> {
+    const params: any = {
+      page: options.page || 1,
+      include_adult: options.includeAdult || false,
+      language: 'en-US',
+      sort_by: options.sortBy || 'popularity.desc',
+    };
+
+    if (options.primaryReleaseYear) params.primary_release_year = options.primaryReleaseYear;
+    if (options.primaryReleaseDateGte) params['primary_release_date.gte'] = options.primaryReleaseDateGte;
+    if (options.primaryReleaseDateLte) params['primary_release_date.lte'] = options.primaryReleaseDateLte;
+    if (options.withGenres) params.with_genres = options.withGenres;
+    if (options.voteAverageGte) params['vote_average.gte'] = options.voteAverageGte;
+    if (options.voteCountGte) params['vote_count.gte'] = options.voteCountGte;
+
+    const response: AxiosResponse<TMDbMovieSearchResult> = await this.api.get('/discover/movie', {
+      params,
+    });
+
+    return response.data;
+  }
+
+  /**
    * Get complete movie details including cast, crew, and metadata
    */
   async getMovieDetails(movieId: number): Promise<TMDbMovieDetails> {

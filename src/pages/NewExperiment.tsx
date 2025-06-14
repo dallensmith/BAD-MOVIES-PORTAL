@@ -1,9 +1,11 @@
 import { ExperimentForm } from '../components/experiment';
-import type { ExperimentFormData, EventPlatform } from '../types';
+import type { ExperimentFormData, EventPlatform, Movie } from '../types';
 import WordPressServiceSingleton from '../services/wordpress.singleton';
+import MovieProcessorService from '../services/movie-processor.service';
 
 const NewExperiment: React.FC = () => {
   const wordpressService = WordPressServiceSingleton.getInstance();
+  const movieProcessor = new MovieProcessorService();
 
   const handleSave = async (experimentData: ExperimentFormData) => {
     console.log('Saving experiment:', experimentData);
@@ -14,6 +16,19 @@ const NewExperiment: React.FC = () => {
       const selectedPlatforms = allPlatforms.filter(platform => 
         experimentData.platformIds.includes(platform.id)
       );
+
+      // Process movies if any are selected
+      let processedMovies: Movie[] = [];
+      if (experimentData.movieSelections && experimentData.movieSelections.length > 0) {
+        console.log('Processing movies:', experimentData.movieSelections);
+        processedMovies = await movieProcessor.processMovies(
+          experimentData.movieSelections,
+          (progress) => {
+            console.log(`Processing movies: ${progress.current}/${progress.total} - ${progress.currentMovie}`);
+          }
+        );
+        console.log('Movies processed successfully:', processedMovies);
+      }
 
       // Upload experiment image if provided
       let experimentImageId: number | undefined;
@@ -35,7 +50,7 @@ const NewExperiment: React.FC = () => {
         platforms: selectedPlatforms,
         notes: experimentData.notes,
         experimentImageId: experimentImageId, // Add the uploaded image ID
-        // movies will be handled later when movie relationships are implemented
+        movies: processedMovies, // Add the processed movies
       };
 
       console.log('Converted experiment data:', experimentToSave);

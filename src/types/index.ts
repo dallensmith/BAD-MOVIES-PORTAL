@@ -389,7 +389,8 @@ export interface ExperimentFormData {
   platformIds: number[];
   notes?: string;
   posterImage?: File;
-  movieIds: number[];
+  movieIds: number[]; // TMDb IDs for backward compatibility
+  movieSelections?: MovieSelectionData[]; // Full movie selection data from TMDb search
 }
 
 export interface MovieSelectionData {

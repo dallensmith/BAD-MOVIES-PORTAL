@@ -3,9 +3,16 @@
 ## PROJECT STATUS UPDATE (Current)
 **✅ ALL CRITICAL ADMIN UI FEATURES IMPLEMENTED AND TESTED**
 
-As of the latest development session, the Bad Movies Portal admin UI is **fully functional and aligned with the WordPress Pods backend**. All major features requested have been successfully implemented:
+As of the latest development session, the Bad Movies Portal admin UI is **fully functional and production-ready**. All major features have been successfully implemented and enhanced:
 
-### ✅ COMPLETED FEATURES:
+### ✅ RECENTLY COMPLETED ENHANCEMENTS:
+- **Advanced Movie Search & Filtering**: Complete overhaul of movie search functionality with robust genre and decade filtering
+- **Hybrid Search Strategy**: Intelligent combination of TMDb search and discover APIs for optimal results
+- **Adult Content Management**: Clear visual indicators and filtering for adult content
+- **Error Resolution**: Fixed critical search crashes and image loading issues
+- **Type Safety**: Comprehensive TypeScript improvements and error handling
+
+### ✅ CORE FEATURES (Previously Completed):
 - **Dynamic Platform Management**: Platforms are fetched from WordPress Pods API in real-time, no hardcoding
 - **User Management**: Host dropdown loads all WordPress users with auto-selection of current user
 - **Experiment Number Auto-Generation**: Sequential numbering (001, 002, 003...) with auto-increment from existing experiments
@@ -15,6 +22,18 @@ As of the latest development session, the Bad Movies Portal admin UI is **fully 
 - **Data Synchronization**: All fields (title, number, slug) are bidirectionally synchronized
 - **Error Handling**: Proper loading states, error handling, and fallback mechanisms
 - **WordPress Integration**: All data saves correctly to WordPress Pods with proper field mapping
+
+### 🎯 ADVANCED SEARCH CAPABILITIES:
+- **Multi-Filter Search**: Combines title search with decade, genre, and content filters
+- **Intelligent API Strategy**: 
+  - Basic search: Uses TMDb search endpoint for speed and accuracy
+  - Search + single filter: Uses search endpoint + client-side filtering for precision
+  - Search + multiple filters: Uses discover endpoint + title filtering for complex queries
+  - Filter-only: Uses discover endpoint for browsing
+- **Decade Filtering**: Accurate date range filtering (1980s = 1980-1989)
+- **Genre Filtering**: Client-side genre matching for search+genre combinations
+- **Adult Content**: Toggle with clear "ADULT" badges on listings
+- **Sort Options**: Popular, rated, newest, oldest with proper API integration
 
 ### ✅ TESTING VERIFIED:
 - Platform changes in WordPress admin instantly reflect in portal (tested: "test" → "Vimeo")
@@ -144,9 +163,46 @@ async getEventPlatforms(): Promise<EventPlatform[]> {
 
 ## Development History & Key Fixes
 
-### Major Issues Resolved:
+### Latest Major Enhancements (December 2025):
 
-1. **Movie Poster Image URLs (Fixed)**
+1. **Movie Search & Filtering Complete Overhaul (MAJOR UPDATE)**
+   - **Problem**: Search with filters (decade, genre) not working properly - API strategy was incorrect
+   - **Root Cause Analysis**: 
+     - TMDb discover API filters by criteria but doesn't search by title
+     - Previous implementation used discover + client-side title filtering (ineffective)
+     - Genre filtering had same issue as decade filtering
+   - **Hybrid Search Solution**: 
+     - **Basic search**: Uses search endpoint (fast, accurate)
+     - **Search + single filter**: Uses search endpoint + client-side filtering (precise)
+     - **Search + multiple filters**: Uses discover endpoint + title filtering (complex queries)
+     - **Filter-only**: Uses discover endpoint (browsing)
+   - **Advanced Filtering Features**:
+     - Decade filtering with proper date ranges (1980s = 1980-01-01 to 1989-12-31)
+     - Genre filtering with client-side genre_ids matching
+     - Adult content toggle with visual indicators
+     - Sort options (popularity, rating, release date)
+   - **Adult Content Management**:
+     - Added prominent red "ADULT" badges for adult content
+     - Toggle defaulted to ON as requested
+     - Clear visual identification in search results
+   - **Error Resolution**:
+     - Fixed genres loading crash (API response structure mismatch)
+     - Added robust error handling and fallback UI
+     - Improved TypeScript type safety
+   - **Files Modified**:
+     - `src/components/movie/MovieSearchModal.tsx` - Complete search logic overhaul
+     - `src/services/tmdb.service.ts` - Enhanced filtering and genre support
+     - `src/types/index.ts` - Improved type definitions
+
+2. **Movie List Image Display Fix**
+   - **Problem**: Selected movies list showing broken placeholder images (`/placeholder-poster.png`)
+   - **Root Cause**: MovieList component not using TMDb image service properly
+   - **Solution**: Implemented same image handling as search modal with proper TMDb URLs and placeholder
+   - **Files Modified**: `src/components/movie/MovieList.tsx`
+
+### Previously Resolved Major Issues:
+
+3. **Movie Poster Image URLs (Fixed)**
    - **Problem**: Images showing broken URLs or `[object Object]`
    - **Root Cause**: Using basic WordPress file URLs instead of Optimole CDN URLs
    - **Solution**: Added `getMediaSourceUrl()` method to fetch proper `source_url` from WordPress media API
