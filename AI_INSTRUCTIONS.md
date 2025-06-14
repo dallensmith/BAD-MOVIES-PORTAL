@@ -37,6 +37,12 @@ As of the latest development session, the Bad Movies Portal admin UI is **fully 
 - Additional feature requests
 - Maintenance and support
 
+### 🔧 VERSION CONTROL:
+- **Git Repository**: Fully initialized and configured
+- **GitHub**: https://github.com/dallensmith/BAD-MOVIES-PORTAL
+- **Commit History**: Complete project development tracked
+- **AI Collaboration**: Ready for multi-session AI development with full context preservation
+
 ## Project Overview
 The Bad Movies Portal is a React/TypeScript web application that manages "bad movie viewing experiments" - events where groups of people watch intentionally bad movies together. The app integrates with WordPress (using Pods) as a backend CMS and TMDb for movie data.
 
@@ -703,3 +709,118 @@ In the most recent development session, all requested admin UI improvements were
 
 ### 📊 FINAL STATE:
 The Bad Movies Portal is now a **production-ready admin interface** that dynamically adapts to WordPress backend changes, provides excellent user experience for experiment management, and maintains data integrity across all operations. All critical requirements have been met and thoroughly tested.
+
+## Git Version Control & AI Collaboration Guidelines
+
+### 🎯 **REPOSITORY STATUS**
+This project is version-controlled with Git and hosted on GitHub:
+- **Repository**: https://github.com/dallensmith/BAD-MOVIES-PORTAL
+- **Branch**: `main` (default)
+- **User**: dallensmith <dallensmith@gmail.com>
+
+### 📋 **Git Workflow for AI Assistants**
+
+#### **MANDATORY: Always Check Git Status First**
+```bash
+git status                  # Check current state
+git log --oneline          # See recent commits
+git diff                   # See what changed
+```
+
+#### **Standard Workflow (3-Step Process)**
+```bash
+# 1. Stage changes
+git add .                  # Add all files
+git add filename.tsx       # Add specific file
+
+# 2. Commit with descriptive message
+git commit -m "Clear description of what changed"
+
+# 3. Push to GitHub
+git push
+```
+
+#### **When to Commit (CRITICAL)**
+- ✅ **After fixing any bug** - Create restore point
+- ✅ **After completing a feature** - Document progress
+- ✅ **Before major refactoring** - Safety backup
+- ✅ **After layout improvements** - Track UI changes
+- ✅ **Before experimental changes** - Enable rollback
+- ✅ **At end of work session** - Preserve progress
+
+#### **Commit Message Guidelines**
+- ✅ **Descriptive**: "Fix: ExperimentEdit form validation error"
+- ✅ **Action-oriented**: "Add: Compact grid layout to ExperimentEdit"
+- ✅ **Component-specific**: "Update: Platform fetching in wordpress.service"
+- ❌ **Vague**: "fix stuff", "changes", "update"
+
+### 🛠️ **Problem Solving with Git**
+
+#### **When Things Break**
+```bash
+# See what changed recently
+git log --oneline -n 10
+
+# Compare with working version
+git diff HEAD~1 filename.tsx
+
+# Restore previous working version
+git checkout HEAD~1 -- filename.tsx
+git commit -m "Restore: Revert filename.tsx to working state"
+```
+
+#### **Finding When Issues Were Introduced**
+```bash
+# See changes to specific file
+git log --oneline src/pages/ExperimentEdit.tsx
+
+# See exact changes in a commit
+git show commit-hash
+
+# Compare two versions
+git diff commit1..commit2 filename.tsx
+```
+
+### 🤖 **AI Assistant Collaboration Benefits**
+
+#### **Context Preservation**
+- **Full project history** available to any AI assistant
+- **Understand previous decisions** through commit messages
+- **See evolution** of features and fixes
+- **Track successful patterns** for reuse
+
+#### **Recovery Capabilities**
+- **Instant restoration** of any previous working state
+- **File-level recovery** without losing other changes
+- **Experimental branches** for testing without risk
+- **Rollback complex changes** if they cause issues
+
+#### **Handoff Between Sessions**
+- **Complete development context** preserved
+- **Work continuity** across different AI assistants
+- **Change tracking** shows what worked and what didn't
+- **Learning from history** prevents repeating mistakes
+
+### ⚠️ **CRITICAL Git Rules for AI Assistants**
+
+1. **ALWAYS commit before major changes** - Create restore points
+2. **NEVER leave work uncommitted** - Preserve progress
+3. **USE descriptive commit messages** - Help future AI understand context
+4. **CHECK git status regularly** - Understand current state
+5. **COMMIT working states** - Even if incomplete, working code should be saved
+6. **PUSH frequently** - Backup to GitHub for safety
+
+### 🔄 **Quick Reference Commands**
+```bash
+# Useful aliases (already configured)
+git st                     # git status
+git cm "message"          # git commit -m "message"
+git br                    # git branch
+git co                    # git checkout
+
+# Emergency recovery
+git stash                 # Temporarily save current changes
+git stash pop             # Restore stashed changes
+git reset --hard HEAD     # Discard all local changes (DANGER!)
+git reflog                # Find lost commits
+```
