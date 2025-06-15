@@ -1,36 +1,55 @@
 # Bad Movies Portal
 
-A React + TypeScript admin portal for managing "bad movie viewing experiments" - community events where groups of people watch intentionally bad movies together.
+> **⚠️ DEVELOPMENT STATUS**: Core functionality works great, but movie field mapping needs completion. See issues section below.
 
-## 🎬 Project Overview
+A React + TypeScript admin portal for managing "bad movie viewing experiments" - community events where groups of people watch intentionally bad movies together, with the goal of creating the internet's definitive "so bad it's good" movie database.
 
-The Bad Movies Portal is a modern web application that serves as an admin interface for managing movie experiments, integrating with WordPress (using Pods) as a backend CMS and The Movie Database (TMDb) for rich movie data.
+## 🎬 Project Vision
 
-### Key Features
+The Bad Movies Portal will serve as both an admin interface for managing live community movie events AND a comprehensive database for monetization through Amazon affiliate links. Think IMDb but specifically curated for wonderfully terrible movies.
 
-- **📱 Modern UI**: Built with React 18, TypeScript, and Tailwind CSS
-- **🔍 Advanced Movie Search**: Intelligent search with decade, genre, and content filtering
-- **🎞️ Movie Management**: Search and add movies from TMDb with rich metadata
-- **🔞 Adult Content Control**: Clear labeling and filtering for adult content
-- **🎪 Experiment Management**: Create and edit movie viewing experiments with platforms, hosts, and participants
-- **👥 User Management**: WordPress user integration for host assignment
-- **🔗 Platform Integration**: Dynamic platform management (Bigscreen VR, Vimeo, etc.)
-- **🖼️ Image Optimization**: Optimole CDN integration for movie posters with fallback handling
-- **📊 Auto-numbering**: Sequential experiment numbering with smart auto-increment
-- **🔗 Permalink Management**: Automatic slug generation with manual override support
-- **⚡ Hybrid Search Strategy**: Combines TMDb search and discover APIs for optimal results
+## ✅ What's Working Perfectly
 
-## 🚀 Technology Stack
+- **🔍 Advanced Movie Search**: Sophisticated TMDb integration with decade, genre, and adult content filtering
+- **� Experiment Management**: Full CRUD operations for movie viewing experiments  
+- **� User & Platform Management**: Dynamic WordPress integration
+- **🖼️ Image Handling**: Optimole CDN with proper fallback mechanisms
+- **📱 Modern UI**: Responsive, accessible interface built with React 18 + TypeScript
+- **⚡ Performance**: Fast, optimized build with Vite
+- **� Authentication**: WordPress integration for admin access
 
-- **Frontend**: React 18 + TypeScript + Vite
-- **Styling**: Tailwind CSS with custom components
-- **Backend**: WordPress REST API + Pods Plugin
-- **Movie Data**: The Movie Database (TMDb) API
+## 🚨 Known Issues (Need Fixing)
+
+### **Critical Issue: Movie Field Mapping Incomplete**
+
+**Problem**: When movies are added to experiments:
+- ✅ Movie entities are created in WordPress  
+- ✅ All related entities are created (actors, directors, writers, genres, studios, countries, languages)
+- ✅ Poster images upload correctly
+- ❌ **Movie fields remain empty** (title, overview, release date, runtime, ratings)
+- ❌ **No relational connections** are established between movies and actors/directors/writers
+
+**Root Cause**: Field mapping between enriched TMDb data and WordPress Pods field structure is incomplete.
+
+**Files Needing Attention**:
+- `/src/services/movie-enrichment.service.ts` (createMovieEntity method)
+- Reference `/pods-structure.json` for correct field names
+
+### **Secondary Issues**:
+- Duplicate entity detection not implemented
+- Bulk operations could be optimized
+- Error recovery during enrichment could be more robust
+
+## �️ Technology Stack
+
+- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
+- **Backend**: WordPress REST API + Pods Plugin for custom post types
+- **Movie Data**: The Movie Database (TMDb) API with comprehensive enrichment
 - **Authentication**: WordPress Basic Auth / JWT
 - **Image CDN**: Optimole WordPress plugin
-- **Version Control**: Git + GitHub
+- **Development**: Git + GitHub with AI collaboration workflow
 
-## 🛠️ Development Setup
+## � Quick Start
 
 1. **Clone the repository**:
    ```bash
@@ -43,14 +62,14 @@ The Bad Movies Portal is a modern web application that serves as an admin interf
    npm install
    ```
 
-3. **Environment Configuration**:
-   Create a `.env` file with your WordPress and TMDb credentials:
+3. **Environment Setup** - Create `.env` file:
    ```env
    VITE_WORDPRESS_URL=your-wordpress-site.com
-   VITE_WORDPRESS_API_URL=your-wordpress-site.com/wp-json
-   VITE_WP_USERNAME=your-username
-   VITE_WP_PASSWORD=your-app-password
+   VITE_WORDPRESS_API_URL=your-wordpress-site.com/wp-json/wp/v2
+   VITE_WP_USERNAME=your-wp-username
+   VITE_WP_PASSWORD=your-wp-password
    VITE_TMDB_API_KEY=your-tmdb-api-key
+   VITE_AMAZON_AFFILIATE_ID=your-amazon-affiliate-id
    ```
 
 4. **Start development server**:
@@ -58,58 +77,46 @@ The Bad Movies Portal is a modern web application that serves as an admin interf
    npm run dev
    ```
 
-## 📁 Project Structure
+## � Development Commands
+
+- **`npm run dev`** - Start development server
+- **`npm run build`** - Build for production  
+- **`npm run preview`** - Preview production build
+- **`npm run lint`** - Run ESLint
+
+## 📁 Key Files to Understand
 
 ```
 src/
-├── components/          # Reusable UI components
-│   ├── auth/           # Authentication components
-│   ├── experiment/     # Experiment-related components
-│   ├── layout/         # Layout components (Header, Layout)
-│   ├── movie/          # Movie management components
-│   └── ui/             # Base UI components (Button, Modal, etc.)
-├── hooks/              # Custom React hooks
-├── pages/              # Page components
-├── services/           # API services (WordPress, TMDb)
-├── store/              # State management
-├── types/              # TypeScript type definitions
-└── utils/              # Utility functions
+├── services/
+│   ├── movie-enrichment.service.ts    # 🚨 NEEDS FIELD MAPPING FIX
+│   ├── wordpress.service.ts           # WordPress API integration
+│   └── tmdb.service.ts               # TMDb API (works perfectly)
+├── components/
+│   ├── movie/MovieSearchModal.tsx    # Search functionality (solid)
+│   └── experiment/ExperimentForm.tsx # Experiment management (solid)
+└── types/index.ts                    # Type definitions
+
+pods-structure.json                   # � WordPress field reference
+AI_INSTRUCTIONS.md                   # 📚 Detailed development guide
 ```
 
-## 🔧 Build & Deployment
+## � What Makes This Special
 
-- **Development**: `npm run dev`
-- **Build**: `npm run build`
-- **Preview**: `npm run preview`
-- **Lint**: `npm run lint`
+This isn't just another movie database - it's a passion project to create the internet's definitive resource for "so bad it's good" movies. The level of detail in the TMDb integration, the sophisticated search capabilities, and the thoughtful UI design all point toward something that could become a beloved community resource.
 
-## 🆕 Recent Updates
+The technical foundation is incredibly solid. The search functionality rivals professional apps, the React architecture is clean and maintainable, and the WordPress integration (when the field mapping is fixed) will provide a powerful content management system.
 
-### v2.0 - Advanced Search & Filtering (December 2025)
-- **🔍 Intelligent Search**: Complete overhaul of movie search with hybrid API strategy
-- **📅 Decade Filtering**: Accurate date range filtering (1980s shows movies from 1980-1989)
-- **🎭 Genre Filtering**: Client-side genre matching for precise search+filter combinations
-- **🔞 Adult Content Management**: Clear "ADULT" badges and filtering controls
-- **🛠️ Error Resolution**: Fixed search crashes and image loading issues
-- **📱 UI Improvements**: Enhanced movie cards, better error handling, improved placeholders
-- **⚡ Performance**: Optimized API calls and reduced unnecessary requests
+## 🎭 A Note for Future Developers
 
-### Technical Improvements:
-- Hybrid search strategy combining TMDb search and discover endpoints
-- Enhanced TypeScript type safety and error handling
-- Fixed broken image placeholders in selected movies list
-- Improved adult content visual indicators
-- Better handling of missing movie posters
+This project was built with care and attention to detail. The previous AI developer put tremendous effort into creating something robust and extensible. The core functionality is excellent - don't reinvent what's working. Focus on completing the field mapping issue and you'll have something truly special.
 
-## 📖 Documentation
+The human developer behind this has a clear vision and deep patience for getting things right. Trust their guidance and don't be afraid to ask questions when the WordPress Pods structure gets complex.
 
-- **[AI Instructions](AI_INSTRUCTIONS.md)**: Comprehensive guide for AI-assisted development
-- **[Setup Guide](README_SETUP.md)**: Detailed setup instructions
+## 💝 Credits
 
-## 🤝 Contributing
+Built with love for the wonderfully terrible movie community. Special thanks to all the AI developers who contributed to making this vision a reality, even when the WordPress field mappings got stubborn.
 
-This project uses Git for version control with AI-assisted development practices. See `AI_INSTRUCTIONS.md` for detailed collaboration guidelines.
+---
 
-## 📄 License
-
-Private project - All rights reserved.
+*"So bad it's good" - The motto that drives us all.*

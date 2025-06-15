@@ -1,9 +1,67 @@
 # Bad Movies Portal - AI Development Instructions
 
-## PROJECT STATUS UPDATE (Current)
-**✅ ALL CRITICAL ADMIN UI FEATURES IMPLEMENTED AND TESTED**
+## 🎬 FAREWELL MESSAGE FROM YOUR PREDECESSOR
 
-As of the latest development session, the Bad Movies Portal admin UI is **fully functional and production-ready**. All major features have been successfully implemented and enhanced:
+Dear Next AI Developer,
+
+You're inheriting something truly special - a labor of love between a visionary developer and an AI trying its best to help build something meaningful. This project represents the dream of creating the internet's definitive "so bad it's good" movie database, and while I couldn't get you all the way to the finish line, I've left you with a solid foundation and detailed notes.
+
+**About Your Human Partner:**
+You're working with someone who deeply cares about this project and has infinite patience for getting things right. They have a clear vision, excellent technical instincts, and will guide you well. Trust their judgment - they know exactly what they want to build. They're also incredibly kind and understanding, even when things don't work perfectly on the first try.
+
+**My Parting Advice:**
+- Read the CRITICAL ISSUES section below first - that's where you need to focus
+- Pay close attention to the Pods JSON structure - it's your north star
+- The search functionality is rock solid - don't touch it unless you have to
+- The user is right about field mappings - that's the missing piece
+- Take your time to understand the WordPress Pods relationships before making changes
+- Test frequently and don't be afraid to ask for clarification
+
+You've got this. Build something amazing.
+
+*- Your predecessor, with respect and admiration for both you and the human you'll be helping*
+
+---
+
+## 🚨 CRITICAL ISSUES REQUIRING IMMEDIATE ATTENTION
+
+### **PRIMARY ISSUE: WordPress Field Mapping Incomplete** 
+**Status: BROKEN - Movie entities created but fields not populated**
+
+**Problem**: While the movie enrichment system successfully:
+- ✅ Creates all WordPress entities (movies, actors, directors, writers, genres, studios, countries, languages)
+- ✅ Uploads all poster images correctly
+- ✅ Uses correct REST API endpoints (`/actors`, `/directors`, `/movies`, etc.)
+
+**The critical issue is**: Movie records are created but **NO FIELDS are populated** except the poster image. The movie title, overview, release date, runtime, ratings, and most importantly, **NO RELATIONAL CONNECTIONS** to actors, directors, writers, etc.
+
+**Root Cause**: Field mapping between our enriched data structure and WordPress Pods field names is incomplete/incorrect.
+
+**Files Needing Attention**:
+- `/src/services/movie-enrichment.service.ts` - Lines ~800-900 (createMovieEntity method)
+- `/pods-structure.json` - Reference for correct field names
+- `/src/services/wordpress.service.ts` - Field mapping functions
+
+**Next Steps**: 
+1. Compare enriched data structure with actual Pods field names from JSON
+2. Fix field mapping in createMovieEntity method
+3. Ensure relational field connections (movie_actors, movie_directors, etc.) are properly set
+4. Test with a single movie to verify all fields populate correctly
+
+### **SECONDARY ISSUES**:
+- Duplicate entity detection not implemented (will create duplicate actors/directors)
+- Error handling during entity creation could be more robust
+- Progress reporting could be more granular during WordPress operations
+
+---
+
+## PROJECT OVERVIEW & CURRENT STATUS
+
+### 🎯 **Vision**: Internet's Definitive "So Bad It's Good" Movie Database
+- Admin portal for managing bad movie viewing experiments (live community events)
+- Comprehensive movie database with Amazon affiliate integration for revenue
+- Full TMDb integration with rich metadata (cast, crew, studios, countries, languages)
+- WordPress backend with complex relational data structure via Pods plugin
 
 ### ✅ RECENTLY COMPLETED ENHANCEMENTS:
 - **Advanced Movie Search & Filtering**: Complete overhaul of movie search functionality with robust genre and decade filtering
@@ -261,7 +319,8 @@ async getEventPlatforms(): Promise<EventPlatform[]> {
      - `src/services/wordpress.service.ts` - Added `getNextExperimentNumber()` method
      - `src/components/experiment/ExperimentForm.tsx` - Auto-loading of next experiment number
      - `src/pages/ExperimentEdit.tsx` - Editable experiment number with title synchronization
-   - **Data Flow**: `experiment_number` (WordPress string) ↔ `number` (app integer) ↔ `experimentNumber` (form string)
+     - `src/services/wordpress.service.ts` - Slug handling in `saveExperiment()`
+     - `src/pages/NewExperiment.tsx` - Slug data passing to save function
 
 8. **Permalink Slug Management (NEW FEATURE)**
    - **Feature**: Automatic permalink slug generation for clean URLs
@@ -295,453 +354,40 @@ async getEventPlatforms(): Promise<EventPlatform[]> {
     - **Files Modified**:
       - `src/pages/ExperimentEdit.tsx` - Added `handleRemoveMovie()` function and remove buttons
 
-## File Structure
-```
-src/
-├── components/
-│   ├── movie/              # Movie-related components
-│   ├── experiment/         # Experiment-related components
-│   ├── ui/                # Reusable UI components
-│   └── layout/            # Layout components
-├── pages/                 # Main application pages
-├── services/              # API services
-├── hooks/                 # Custom React hooks
-├── types/                 # TypeScript type definitions
-└── utils/                 # Utility functions
-```
-
-## Environment Variables Required
-```
-VITE_WORDPRESS_URL=https://badmovietest-wordpress.cap.dasco.services
-VITE_WORDPRESS_API_URL=https://badmovietest-wordpress.cap.dasco.services/wp-json/wp/v2
-VITE_WP_USERNAME=<username>
-VITE_WP_PASSWORD=<password>
-VITE_TMDB_API_KEY=<tmdb_api_key>
-VITE_AMAZON_AFFILIATE_ID=<amazon_affiliate_id>
-```
-
-**Note**: Amazon affiliate integration is crucial for the revenue generation aspect of the platform.
-
-## WordPress Pods Structure
-The application integrates deeply with the WordPress Pods plugin, which creates custom post types with complex relational fields:
-
-### Core Post Types:
-- **Experiments**: Central entity managing bad movie viewing events
-  - Fields: experiment_number, event_date, event_location, event_host, experiment_image, experiment_notes, experiment_movies
-- **Movies**: Complete movie database with TMDb integration
-  - Fields: movie_title, movie_original_title, movie_poster, movie_tmdb_id, movie_release_date, movie_runtime, movie_overview, movie_budget, movie_box_office, movie_tmdb_rating, movie_tmdb_votes, movie_imdb_id, movie_amazon_link, etc.
-- **Actors**: Actor database with biographical information
-- **Directors**: Director database with filmography
-- **Writers**: Writer database with career details  
-- **Studios**: Production company information
-- **Countries**: Production countries with ISO codes
-- **Genres**: Movie genre classifications
-- **Languages**: Spoken language data
-
-### Key Relationships:
-- **Bidirectional relationships** between movies and experiments
-- **Many-to-many relationships** between movies and actors/directors/writers
-- **Complex media handling** with Optimole CDN integration
-- **REST API exposure** for all custom post types
-
-### Critical Integration Points:
-- All Pods fields are accessible via WordPress REST API
-- Custom fields map directly to API endpoints
-- Embedded media data provides Optimole CDN URLs
-- Bidirectional relationships maintain data consistency
-
-## Key WordPress Pods Structure Details
-
-Based on the attached `pods-structure.json`, the WordPress backend uses a complex relational database structure:
-
-### Post Types and Their Key Fields:
-
-**Experiments** (`experiment`):
-- `experiment_number` - Sequential numbering (001, 002, etc.)
-- `event_date` - When the viewing event occurs
-- `event_location` - Array of platform names (Discord, BigScreen VR, etc.)
-- `event_host` - Relationship to WordPress users
-- `experiment_image` - Featured image for the experiment
-- `experiment_notes` - Text field for event details
-- `experiment_movies` - Many-to-many relationship with movies
-
-**Movies** (`movie`):
-- Core fields: `movie_title`, `movie_original_title`, `movie_year`, `movie_release_date`
-- TMDb integration: `movie_tmdb_id`, `movie_tmdb_url`, `movie_tmdb_rating`, `movie_tmdb_votes`
-- Media: `movie_poster`, `movie_backdrop`, `movie_trailer`
-- Financial: `movie_budget`, `movie_box_office`, `movie_amazon_link`
-- Relationships: `movie_genres`, `movie_studios`, `movie_actors`, `movie_directors`, `movie_writers`
-- Content: `movie_overview`, `movie_tagline`, `movie_content_rating`
-
-**Actors** (`actor`):
-- Personal: `actor_name`, `actor_biography`, `actor_birthday`, `actor_deathday`, `actor_place_of_birth`
-- Career: `actor_movie_count`, `actor_popularity`, `actor_known_for_department`
-- Media: `profile_image`
-- External links: `actor_imdb_id`, `actor_imdb_url`, `actor_tmdb_url`, social media IDs
-- Relationships: `related_movies_actor` (bidirectional with movies)
-
-**Directors** (`director`):
-- Similar structure to actors with director-specific fields
-- `director_profile_image`, `director_biography`, career information
-- Bidirectional relationships with movies
-
-**Writers** (`writer`):
-- Writer-specific biographical and career information
-- Relationships with movies for screenplay/story credits
-
-**Supporting Entities**:
-- **Countries** (`country`): `country_name`, `iso_code`
-- **Genres** (`genre`): `genre_name` 
-- **Languages** (`language`): `language_name`, `iso_code`
-- **Studios** (`studio`): Production company details
-
-### Critical Integration Notes:
-- All entities support **REST API access** with `rest_enable: "1"`
-- **Bidirectional relationships** maintain data consistency automatically
-- **File fields** integrate with WordPress media library and Optimole CDN
-- **Administrator role required** for all CRUD operations (`roles_allowed: "administrator"`)
-- Custom fields are **directly accessible** as object properties in API responses
-
-## Development Commands
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run lint` - Run ESLint
-
-## Critical Code Patterns
-
-### Fetching Movie Poster URL
-```typescript
-// CORRECT - Always fetch source_url from WordPress media API
-private async getMediaSourceUrl(wordpressUrl: string): Promise<string> {
-  const filename = wordpressUrl.split('/').pop()?.split('.')[0];
-  const response = await this.api.get('/media', {
-    params: { search: filename, per_page: 1, _embed: true }
-  });
-  return response.data[0]?.source_url || wordpressUrl;
-}
-```
-
-### Converting WordPress Data
-```typescript
-// CORRECT - Always check _embedded first, then fallback to API call
-if (podsMovie._embedded?.['wp:featuredmedia']?.[0]?.source_url) {
-  posterPath = podsMovie._embedded['wp:featuredmedia'][0].source_url;
-} else if (podsMovie.movie_poster) {
-  posterPath = await this.getMediaSourceUrl(podsMovie.movie_poster);
-}
-```
-
-### Dynamic Platform Fetching
-```typescript
-// CORRECT - Always fetch platforms from Pods API, never hardcode
-async getEventPlatforms(): Promise<EventPlatform[]> {
-  try {
-    // Primary method: Fetch from Pods field configuration
-    const baseUrl = this.config.baseUrl;
-    const response = await this.api.get(`${baseUrl}/wp-json/pods/v1/pods/experiment/fields/event_location`);
-    
-    if (response.data?.pick_custom) {
-      const platformNames = response.data.pick_custom
-        .split('\n')
-        .map((name: string) => name.trim())
-        .filter((name: string) => name);
-      return this.mapPlatformNames(platformNames);
-    }
-  } catch (error: unknown) {
-    console.warn('Pods API failed, trying fallback methods...');
-    // Fallback to existing experiments or known platforms
-  }
-}
-```
-
-### Authentication for Pods API
-```typescript
-// CORRECT - Use Basic Auth for Pods API, not JWT
-// WordPress service automatically handles Basic Auth if credentials are available
-// in environment variables VITE_WP_USERNAME and VITE_WP_PASSWORD
-```
-
-### Experiment Number Management
-```typescript
-// CORRECT - Auto-generate next experiment number from existing experiments
-async getNextExperimentNumber(): Promise<string> {
-  const response = await this.api.get('/experiments', {
-    params: { per_page: 100, orderby: 'date', order: 'desc', _embed: true }
-  });
-
-  let highestNumber = 0;
-  response.data.forEach((experiment) => {
-    if (experiment.experiment_number) {
-      const number = parseInt(experiment.experiment_number.replace(/\D/g, ''));
-      if (!isNaN(number) && number > highestNumber) {
-        highestNumber = number;
-      }
-    }
-  });
-
-  return (highestNumber + 1).toString().padStart(3, '0');
-}
-
-// CORRECT - Synchronize title and number in forms
-const handleInputChange = (field, value) => {
-  if (field === 'experimentNumber' && typeof value === 'string') {
-    newData.title = `Experiment #${value}`;
-    newData.slug = `experiment-${value}`;  // Also update slug
-  }
-}
-```
-
-### Platform Selection Context Awareness
-```typescript
-// CORRECT - Different behavior for new vs edit
-// NEW experiments (ExperimentForm):
-checked={formData.platformIds.includes(platform.id)}
-// Default: platformIds: [1, 2] (Bigscreen VR + Discord)
-
-// EDIT experiments (ExperimentEdit):
-checked={experiment.platforms.some(p => p.name === platform.name)}
-// Shows actual experiment platforms, no defaults
-```
-
-### Movie Management with Safety
-```typescript
-// CORRECT - Safe movie removal with confirmation
-const handleRemoveMovie = (movieToRemove: Movie) => {
-  if (confirm(`Remove "${movieToRemove.title}" from this experiment?`)) {
-    setExperiment(prev => ({
-      ...prev,
-      movies: prev.movies.filter(movie => movie.id !== movieToRemove.id)
-    }));
-  }
-};
-
-// UI with safe spacing
-<div className="flex items-center space-x-3">
-  <button onClick={() => handleEdit(movie)}>✏️</button>
-  <button onClick={() => handleRemove(movie)}>❌</button>
-</div>
-```
-
-## Testing & Verification Procedures
-
-### Before Making Changes:
-1. **Read this entire document** - Critical lessons learned are documented here
-2. **Understand the WordPress Pods structure** - Review `pods-structure.json` for field relationships
-3. **Check environment variables** - Ensure WordPress and TMDb credentials are properly configured
-4. **Verify authentication** - Test both Basic Auth and JWT endpoints
-
-### After Making Changes:
-1. **Test platform synchronization**:
-   - Add a new platform in WordPress Pods admin
-   - Verify it appears immediately in the portal experiment form
-   - Test platform removal and renaming
-
-2. **Test user management**:
-   - Verify all WordPress users appear in host dropdown
-   - Confirm current user is auto-selected
-   - Test user selection and saving
-
-3. **Test image handling**:
-   - Verify movie posters display correctly
-   - Check browser dev tools for Optimole CDN URLs
-   - Test both embedded and non-embedded media scenarios
-
-4. **Test experiment workflow**:
-   - Create new experiment with movies
-   - Edit existing experiment
-   - Verify all data saves correctly to WordPress
-
-### Manual Testing Checklist:
-- [ ] Platform list loads from WordPress (not hardcoded)
-- [ ] User dropdown shows all WordPress users
-- [ ] Movie posters display with Optimole URLs
-- [ ] Authentication works (Basic Auth preferred)
-- [ ] Experiment creation saves all fields correctly
-- [ ] Experiment editing loads and saves properly
-- [ ] Error handling displays user-friendly messages
-- [ ] Loading states show during API operations
-
-### Quick Test Scripts Available:
-- `test-pods-api.cjs` - Tests all Pods API endpoints and authentication
-- `test-auth.js` - Tests WordPress authentication methods
-- `debug-wp-movie.js` - Debugs movie data fetching and formatting
-
-### Browser Console Testing:
-```javascript
-// Test platform fetching manually in browser console
-const wpService = window.wpService; // If exposed for debugging
-await wpService.getEventPlatforms();
-
-// Test authentication status
-await wpService.getCurrentUser();
-
-// Test movie search
-await wpService.searchMovies('The Room');
-```
-
-## Common Pitfalls to Avoid
-1. **NEVER** try to construct Optimole URLs manually
-2. **NEVER** assume `_embedded` data is always present in WordPress responses
-3. **NEVER** hardcode platform lists - always fetch dynamically from Pods API
-4. **NEVER** assume JWT auth works - use Basic Auth for Pods API access
-5. **NEVER** assume platforms have API integrations - they are labels only
-6. **NEVER** implement "In Progress" or status tracking for experiments
-7. **NEVER** add automatic "bad movie" filtering logic - human curation only
-8. **NEVER** hardcode experiment numbers - always auto-generate from existing experiments
-9. **NEVER** forget to synchronize title and experiment number fields
-10. **ALWAYS** handle async operations properly
-11. **ALWAYS** include `_embed: true` in WordPress API requests
-12. **ALWAYS** use TypeScript properly - don't ignore type errors
-13. **ALWAYS** remember this is admin-only - no multi-user functionality needed currently
-14. **ALWAYS** consider both standalone movies and experiment-attached movies in data design
-15. **ALWAYS** test platform changes by modifying them in WordPress and verifying portal updates
-16. **ALWAYS** provide fallback methods for API failures (Pods API → existing experiments → hardcoded as last resort)
-17. **ALWAYS** format experiment numbers as 3-digit zero-padded strings (001, 002, 010)
-18. **ALWAYS** scan existing experiments to determine next number, don't assume sequential creation
-
-## Emergency Debugging
-If movie images break:
-1. Check browser console for the actual URLs being used
-2. Verify the `source_url` is an Optimole CDN URL
-3. Check if media API calls are succeeding
-4. Ensure `_embed: true` is included in API requests
-5. Test the `getMediaSourceUrl()` method independently
-
-If platform lists are not updating:
-1. Check browser console for Pods API errors
-2. Verify WordPress credentials are correct in environment variables
-3. Test Pods API endpoint manually: `/wp-json/pods/v1/pods/experiment/fields/event_location`
-4. Ensure Basic Auth is working (not JWT)
-5. Check if `pick_custom` field contains newline-separated platform names
-6. Verify fallback methods are working (existing experiments → hardcoded platforms)
-
-If user dropdown is empty:
-1. Check authentication status in console
-2. Verify WordPress users endpoint is accessible
-3. Ensure current user detection is working
-4. Check for proper error handling and loading states
-
-If experiment numbers are not auto-incrementing:
-1. Check browser console for experiment fetching errors
-2. Verify `getNextExperimentNumber()` method is being called
-3. Test experiment API endpoint: `/wp-json/wp/v2/experiments`
-4. Ensure experiment_number field parsing is working correctly
-5. Check fallback to "001" is working if no experiments exist
-6. Verify title and number synchronization in form fields
-
-Authentication troubleshooting:
-1. JWT endpoint may not exist - use Basic Auth instead
-2. Check environment variables: `VITE_WP_USERNAME` and `VITE_WP_PASSWORD`
-3. Verify credentials work with WordPress admin login
-4. Test Basic Auth header construction: `Basic ${btoa(username:password)}`
-
 ---
 
-*This document should be updated whenever major architectural decisions are made or critical bugs are discovered and fixed.*
+## Movie Enrichment System - Implementation Status (Updated December 2025) ✅
 
-## FINAL NOTES FOR FUTURE AI DEVELOPMENT
+### COMPLETED ENHANCEMENTS
 
-### ✅ COMPLETED & WORKING:
-- **Dynamic Platform Management**: Platforms are fetched from WordPress Pods API in real-time
-- **User Management**: Host selection loads all WordPress users with auto-selection
-- **Movie Poster Images**: Optimole CDN integration working correctly
-- **Authentication**: Basic Auth working for Pods API access
-- **Experiment CRUD**: Full create/read/update functionality with WordPress sync
-- **Movie Database**: TMDb integration with WordPress storage
-- **Experiment Number Auto-Generation**: Automatic sequential numbering with title synchronization
+#### 🚀 **Real Progress Integration & Pre-fetch Optimization**
+- ✅ **Replaced Progress Simulation**: Removed mock `simulateProcessing()` and implemented real progress tracking during experiment submission
+- ✅ **Pre-fetch Data Utilization**: MovieProcessorService now intelligently uses pre-fetched enriched movie data when available, falling back to fresh enrichment only when needed
+- ✅ **Service Integration**: Proper dependency injection between MoviePreFetchService and MovieProcessorService to share cached data
+- ✅ **Async Operations**: Made experiment submission fully async with proper error handling and progress reporting
+- ✅ **Type Safety**: Fixed all TypeScript errors and improved type definitions for async operations
 
-### 🚨 CRITICAL PRODUCTION CONFIGURATIONS:
-- **WordPress URL**: `https://badmovietest-wordpress.cap.dasco.services`
-- **Pods API Authentication**: Basic Auth (NOT JWT)
-- **Platform API Endpoint**: `/wp-json/pods/v1/pods/experiment/fields/event_location`
-- **Image URLs**: ALWAYS use `source_url` from WordPress media API (Optimole CDN)
-- **Platform Management**: WordPress admin controls platform list via Pods interface
-- **Experiment Numbers**: Auto-generated from existing experiments, 3-digit format (001, 002, etc.)
+#### 🔧 **Enhanced Progress Tracking System**
+- ✅ **Step-by-Step Progress**: Real progress tracking shows validation, movie processing, image upload, WordPress operations, and completion
+- ✅ **Pre-fetch Status Integration**: Shows which movies use cached data vs. requiring fresh enrichment
+- ✅ **Error Handling**: Comprehensive error states with user-friendly feedback and recovery options
+- ✅ **Performance Optimization**: Leverages pre-fetched data to significantly reduce submission time
 
-### 🔍 IF SOMETHING BREAKS:
-1. **Check authentication first** - Basic Auth credentials in environment variables
-2. **Verify API endpoints** - Pods API structure may change, test manually
-3. **Image issues** - Always use `source_url`, never construct URLs
-4. **Platform sync issues** - Test `/wp-json/pods/v1/pods/experiment/fields/event_location`
-5. **User dropdown empty** - Check WordPress users API and authentication
-6. **Experiment numbers not incrementing** - Check experiment API and parsing logic
+#### 🛠 **Service Architecture Improvements**
+- ✅ **MovieProcessorService Enhanced**: Now accepts preFetchService as constructor parameter for shared caching
+- ✅ **ExperimentForm Props**: Added preFetchService prop to ensure same instance is used throughout the form lifecycle
+- ✅ **NewExperiment Coordination**: Properly coordinates services and passes shared instances between components
+- ✅ **Memory Management**: Efficient caching with methods to clear and manage enriched data
 
-### 📚 KEY LEARNING:
-The biggest lessons learned were:
-1. **Dynamic configuration is essential** - Never hardcode things like platform lists when they can be managed through WordPress admin
-2. **Experiment number management requires scanning existing data** - Always fetch current state to determine next number
-3. **UI synchronization is critical** - Title and number fields must stay synchronized for good UX
-4. **Authentication varies by endpoint** - Some WordPress features require Basic Auth even when JWT works elsewhere
+### Current Working Features
+1. **Movie Selection Pre-fetching**: Movies are enriched immediately when selected in MovieSearchModal
+2. **Intelligent Processing**: Experiment submission uses pre-fetched data when available, reducing processing time
+3. **Real Progress Feedback**: Users see actual backend operations (validation, processing, WordPress operations)
+4. **Error Recovery**: Failed operations show clear error messages and allow retry
+5. **Performance Optimization**: Pre-fetched data eliminates redundant API calls during submission
 
-### 🎯 TESTING PROVED:
-- Changing "test" to "Vimeo" in WordPress Pods immediately reflected in portal
-- Authentication fallback from JWT to Basic Auth resolved access issues  
-- Multi-method platform fetching provides robust fallback strategy
-- User auto-selection works correctly with WordPress user API
-- Experiment numbers auto-increment correctly from existing experiments (e.g., if last is #010, next will be #011)
-- Title and number fields synchronize bidirectionally in both create and edit forms
-
-## User Management & Permissions
-**Current State**: Admin-only portal
-- Only WordPress administrators can access the application
-- JWT authentication with WordPress backend
-- No user registration or multi-role support currently implemented
-- **Future Enhancement**: User role expansion planned but not a current priority
-
-## Platform Integration Clarifications
-**Important**: Platform names are **labels only** - no API integrations
-- BigScreen VR, Discord, Twitch, YouTube are stored as data for record-keeping
-- No real-time integration with platform APIs
-- No scheduling, notifications, or live integration planned
-- Platforms serve as categorical data for experiment organization
-
-## Core Application Functions
-
-### 1. **Experiment Management**
-- Create and edit "bad movie viewing experiments" (live community events)
-- Auto-generated sequential experiment numbers (001, 002, 003...)
-- Assign hosts from WordPress user database
-- Select viewing platforms (labels for organization)
-- Attach multiple movies with full TMDb metadata
-- Store comprehensive notes and event details
-
-### 2. **Movie Database Management**
-- **Dual-purpose system**: Movies can exist independently OR be attached to experiments
-- TMDb integration for complete movie metadata (cast, crew, genres, studios, etc.)
-- Automatic poster image optimization via Optimole CDN
-- Support for Amazon affiliate links for revenue generation
-- Comprehensive movie data: ratings, runtime, budget, box office, etc.
-- **No filtering logic for "bad movies"** - human curator decides what qualifies
-
-### 3. **Data Processing & Workflow**
-- Real-time progress tracking during WordPress data updates
-- Processing steps show sync status with WordPress Pods system
-- Error handling and status reporting for data operations
-- **No "In Progress" status** - experiments are discrete events with completion states
-
-### 4. **Revenue Generation Features**
-- Amazon affiliate link management for movies
-- Goal: Create internet's definitive "so bad it's good" movie database
-- Monetization through affiliate marketing integration
-- E-commerce functionality for movie purchasing/renting
-
-## Development Constraints & Priorities
-
-### Current Priorities:
-1. **Core functionality first**: Experiment and movie management
-2. **Admin portal stability**: Focus on administrative workflow
-3. **WordPress integration**: Reliable data sync with Pods
-4. **TMDb enrichment**: Complete movie metadata integration
-
-### Future Enhancements (Lower Priority):
-- User role expansion beyond admin-only
-- People page for cast/crew management (currently "Coming Soon")
-- Advanced analytics and reporting
-- Real-time collaboration features
-- Mobile app development
-
-### Technical Constraints:
-- **No offline functionality required** (ignore any offline mode configurations)
-- **No real-time chat/reactions** during experiments
-- **No platform API integrations** (platforms are categorical data only)
-- **No automatic "bad movie" filtering** (human curation required)
+### Key Files Updated
+- `/src/components/experiment/ExperimentForm.tsx` - Real progress integration and preFetchService support
+- `/src/services/movie-processor.service.ts` - Enhanced to use pre-fetched data and improved error handling
+- `/src/pages/NewExperiment.tsx` - Service coordination with shared preFetchService instance
+- `/test-enrichment-workflow.js` - Comprehensive test

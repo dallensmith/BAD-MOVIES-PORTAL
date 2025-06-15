@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, Image, Save, Plus } from 'lucide-react';
 import { Button, Input, Modal, ProgressBar } from '../ui';
+import ProgressTracker from '../ui/ProgressTracker';
 import { MovieSearchModal, MovieList } from '../movie';
 import { clsx } from 'clsx';
 import WordPressServiceSingleton from '../../services/wordpress.singleton';
+import MoviePreFetchService from '../../services/movie-prefetch.service';
 import type { 
   ExperimentFormData, 
   MovieSelectionData, 
@@ -12,18 +14,21 @@ import type {
   WordPressUser,
   ProcessingStep
 } from '../../types';
+import type { ProgressStep } from '../../types/progress';
 
-// Initialize WordPress service
+// Initialize services
 const wordpressService = WordPressServiceSingleton.getInstance();
 
 interface ExperimentFormProps {
-  onSave?: (experiment: ExperimentFormData) => void;
+  onSave?: (experiment: ExperimentFormData) => Promise<void>;
   isEditing?: boolean;
+  preFetchService?: MoviePreFetchService;
 }
 
 const ExperimentForm: React.FC<ExperimentFormProps> = ({
   onSave,
   isEditing = false,
+  preFetchService: providedPreFetchService,
 }) => {
   const navigate = useNavigate();
   const [isMovieSearchOpen, setIsMovieSearchOpen] = useState(false);
@@ -31,9 +36,17 @@ const ExperimentForm: React.FC<ExperimentFormProps> = ({
   const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([]);
   const [selectedMovies, setSelectedMovies] = useState<MovieSelectionData[]>([]);
   
+  // Use provided preFetchService or create a new one
+  const preFetchService = providedPreFetchService || new MoviePreFetchService();
+  
+  // Progress tracking state
+  const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
+  const [isProgressVisible, setIsProgressVisible] = useState(false);
+  const [currentOperation, setCurrentOperation] = useState('');
+  
   // WordPress data state
-  const [users, setUsers] = useState<any[]>([]); // Using any temporarily to see actual structure
-  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [users, setUsers] = useState<WordPressUser[]>([]);
+  const [currentUser, setCurrentUser] = useState<WordPressUser | null>(null);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [userLoadError, setUserLoadError] = useState<string | null>(null);
 
@@ -43,13 +56,13 @@ const ExperimentForm: React.FC<ExperimentFormProps> = ({
   const [platformLoadError, setPlatformLoadError] = useState<string | null>(null);
 
   // Helper function to safely get user display name
-  const getUserDisplayName = (user: any): string => {
-    return user?.name || user?.display_name || user?.displayName || user?.username || user?.login || `User ${user?.id || 'Unknown'}`;
+  const getUserDisplayName = (user: WordPressUser): string => {
+    return user?.name || user?.displayName || user?.username || user?.login || `User ${user?.id || 'Unknown'}`;
   };
 
   // Helper function to safely get username
-  const getUserUsername = (user: any): string => {
-    return user?.username || user?.login || user?.slug || user?.user_login || 'no-username';
+  const getUserUsername = (user: WordPressUser): string => {
+    return user?.username || user?.login || user?.slug || 'no-username';
   };
   
   // Form data
@@ -194,52 +207,142 @@ const ExperimentForm: React.FC<ExperimentFormProps> = ({
     }
   };
 
-  const handleMovieSelect = (movie: MovieSelectionData) => {
-    setSelectedMovies(prev => {
-      const exists = prev.find(m => m.tmdbId === movie.tmdbId);
-      if (exists) return prev;
-      return [...prev, movie];
-    });
+  const handleMovieSelect = async (movie: MovieSelectionData) => {
+    // Check if movie is already selected
+    const exists = selectedMovies.find(m => m.tmdbId === movie.tmdbId);
+    if (exists) return;
+
+    // Add movie to selection first
+    setSelectedMovies(prev => [...prev, movie]);
     setIsMovieSearchOpen(false);
+
+    // Start pre-fetching movie data in the background
+    console.log('Starting pre-fetch for movie:', movie.title);
+    setCurrentOperation(`Pre-fetching data for "${movie.title}"`);
+    setIsProgressVisible(true);
+    
+    const initialSteps: ProgressStep[] = [
+      {
+        id: `prefetch-${movie.tmdbId}`,
+        title: `Pre-fetching "${movie.title}"`,
+        status: 'active',
+        progress: 0,
+        total: 8,
+        details: 'Starting enrichment process...'
+      }
+    ];
+    
+    setProgressSteps(initialSteps);
+
+    try {
+      await preFetchService.preFetchMovieData(
+        movie,
+        (progress) => {
+          console.log('Pre-fetch progress:', progress);
+          setProgressSteps(prev => prev.map(step => 
+            step.id === `prefetch-${movie.tmdbId}` ? {
+              ...step,
+              status: progress.status === 'complete' ? 'completed' : 'active',
+              progress: progress.progress,
+              total: progress.total,
+              details: progress.step
+            } : step
+          ));
+        }
+      );
+
+      // Hide progress after successful completion
+      setTimeout(() => {
+        setIsProgressVisible(false);
+        setProgressSteps([]);
+      }, 2000);
+
+    } catch (error) {
+      console.error('Pre-fetch failed:', error);
+      setProgressSteps(prev => prev.map(step => 
+        step.id === `prefetch-${movie.tmdbId}` ? {
+          ...step,
+          status: 'error',
+          details: `Failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        } : step
+      ));
+      
+      // Hide progress after error
+      setTimeout(() => {
+        setIsProgressVisible(false);
+        setProgressSteps([]);
+      }, 3000);
+    }
   };
 
   const handleMovieRemove = (movieId: number) => {
     setSelectedMovies(prev => prev.filter(movie => movie.tmdbId !== movieId));
   };
 
-  const simulateProcessing = async () => {
-    const steps: ProcessingStep[] = [
-      { id: 'validate', name: 'Validating experiment data', status: 'pending' },
-      { id: 'movies', name: 'Processing movies', status: 'pending' },
-      { id: 'images', name: 'Uploading images', status: 'pending' },
-      { id: 'wordpress', name: 'Saving to WordPress', status: 'pending' },
-      { id: 'relationships', name: 'Creating relationships', status: 'pending' },
-    ];
-
-    setProcessingSteps(steps);
-
-    for (let i = 0; i < steps.length; i++) {
-      // Update current step to in-progress
-      setProcessingSteps(prev => prev.map((step, index) => 
-        index === i ? { ...step, status: 'in-progress' } : step
-      ));
-
-      // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-
-      // Mark step as completed
-      setProcessingSteps(prev => prev.map((step, index) => 
-        index === i ? { ...step, status: 'completed' } : step
-      ));
-    }
-  };
-
   const handleSave = async () => {
     setIsProcessing(true);
+    
+    // Initialize progress steps for experiment submission
+    const submissionSteps: ProcessingStep[] = [
+      { id: 'validate', name: 'Validating experiment data', status: 'pending' },
+      { id: 'movies', name: 'Processing movie data', status: 'pending' },
+      { id: 'images', name: 'Uploading images', status: 'pending' },
+      { id: 'wordpress', name: 'Saving to WordPress', status: 'pending' },
+      { id: 'complete', name: 'Finalizing experiment', status: 'pending' },
+    ];
+    
+    setProcessingSteps(submissionSteps);
 
     try {
-      // Simulate processing
-      await simulateProcessing();
+      // Step 1: Validate data
+      setProcessingSteps(prev => prev.map(step => 
+        step.id === 'validate' ? { ...step, status: 'in-progress' } : step
+      ));
+      
+      // Basic validation
+      if (!formData.title || !formData.experimentNumber) {
+        throw new Error('Title and experiment number are required');
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setProcessingSteps(prev => prev.map(step => 
+        step.id === 'validate' ? { ...step, status: 'completed' } : step
+      ));
+
+      // Step 2: Prepare movie data (use pre-fetched data where available)
+      setProcessingSteps(prev => prev.map(step => 
+        step.id === 'movies' ? { ...step, status: 'in-progress' } : step
+      ));
+      
+      // Check which movies have been pre-fetched
+      const preFetchedMovies = selectedMovies.filter(movie => 
+        preFetchService.isMovieEnriched(movie.tmdbId)
+      );
+      const notPreFetchedMovies = selectedMovies.filter(movie => 
+        !preFetchService.isMovieEnriched(movie.tmdbId)
+      );
+      
+      console.log(`Using ${preFetchedMovies.length} pre-fetched movies, ${notPreFetchedMovies.length} need enrichment`);
+      
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setProcessingSteps(prev => prev.map(step => 
+        step.id === 'movies' ? { ...step, status: 'completed' } : step
+      ));
+
+      // Step 3: Handle image upload (simulated for now)
+      setProcessingSteps(prev => prev.map(step => 
+        step.id === 'images' ? { ...step, status: 'in-progress' } : step
+      ));
+      
+      await new Promise(resolve => setTimeout(resolve, 600));
+      setProcessingSteps(prev => prev.map(step => 
+        step.id === 'images' ? { ...step, status: 'completed' } : step
+      ));
+
+      // Step 4: Save to WordPress
+      setProcessingSteps(prev => prev.map(step => 
+        step.id === 'wordpress' ? { ...step, status: 'in-progress' } : step
+      ));
 
       const experimentData: ExperimentFormData = {
         ...formData,
@@ -248,8 +351,22 @@ const ExperimentForm: React.FC<ExperimentFormProps> = ({
       };
 
       if (onSave) {
-        onSave(experimentData);
+        await onSave(experimentData);
       }
+      
+      setProcessingSteps(prev => prev.map(step => 
+        step.id === 'wordpress' ? { ...step, status: 'completed' } : step
+      ));
+
+      // Step 5: Complete
+      setProcessingSteps(prev => prev.map(step => 
+        step.id === 'complete' ? { ...step, status: 'in-progress' } : step
+      ));
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setProcessingSteps(prev => prev.map(step => 
+        step.id === 'complete' ? { ...step, status: 'completed' } : step
+      ));
 
       // Navigate to experiment list or show success message
       setTimeout(() => {
@@ -258,7 +375,16 @@ const ExperimentForm: React.FC<ExperimentFormProps> = ({
 
     } catch (error) {
       console.error('Error saving experiment:', error);
+      
+      // Mark current step as error
+      setProcessingSteps(prev => prev.map(step => 
+        step.status === 'in-progress' ? { ...step, status: 'error' } : step
+      ));
+      
       setIsProcessing(false);
+      
+      // Show error to user
+      alert(`Error saving experiment: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -572,6 +698,14 @@ const ExperimentForm: React.FC<ExperimentFormProps> = ({
           )}
         </div>
       </Modal>
+
+      {/* Progress Tracker for Movie Pre-fetching */}
+      <ProgressTracker
+        title={currentOperation || 'Processing'}
+        steps={progressSteps}
+        isVisible={isProgressVisible}
+        onClose={() => setIsProgressVisible(false)}
+      />
     </>
   );
 };

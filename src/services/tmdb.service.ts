@@ -173,6 +173,18 @@ class TMDbService {
   }
 
   /**
+   * Get movie credits (cast and crew)
+   */
+  async getMovieCredits(movieId: number) {
+    const response = await this.api.get(`/movie/${movieId}/credits`, {
+      params: {
+        language: 'en-US',
+      },
+    });
+    return response.data;
+  }
+
+  /**
    * Get trending movies
    */
   async getTrendingMovies(timeWindow: 'day' | 'week' = 'week', page: number = 1) {

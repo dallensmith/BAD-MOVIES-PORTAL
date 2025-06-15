@@ -1,11 +1,13 @@
 import { ExperimentForm } from '../components/experiment';
-import type { ExperimentFormData, EventPlatform, Movie } from '../types';
+import type { ExperimentFormData, Movie } from '../types';
 import WordPressServiceSingleton from '../services/wordpress.singleton';
 import MovieProcessorService from '../services/movie-processor.service';
+import MoviePreFetchService from '../services/movie-prefetch.service';
 
 const NewExperiment: React.FC = () => {
   const wordpressService = WordPressServiceSingleton.getInstance();
-  const movieProcessor = new MovieProcessorService();
+  const preFetchService = new MoviePreFetchService();
+  const movieProcessor = new MovieProcessorService(preFetchService);
 
   const handleSave = async (experimentData: ExperimentFormData) => {
     console.log('Saving experiment:', experimentData);
@@ -20,14 +22,15 @@ const NewExperiment: React.FC = () => {
       // Process movies if any are selected
       let processedMovies: Movie[] = [];
       if (experimentData.movieSelections && experimentData.movieSelections.length > 0) {
-        console.log('Processing movies:', experimentData.movieSelections);
+        console.log('Processing and enriching movies with full relational data:', experimentData.movieSelections);
         processedMovies = await movieProcessor.processMovies(
           experimentData.movieSelections,
           (progress) => {
-            console.log(`Processing movies: ${progress.current}/${progress.total} - ${progress.currentMovie}`);
+            console.log(`Processing movies: ${progress.current}/${progress.total} - ${progress.currentMovie} (${progress.status})`);
+            // TODO: Show progress UI to user
           }
         );
-        console.log('Movies processed successfully:', processedMovies);
+        console.log('Movies fully enriched and processed:', processedMovies);
       }
 
       // Upload experiment image if provided
@@ -63,7 +66,7 @@ const NewExperiment: React.FC = () => {
     }
   };
 
-  return <ExperimentForm onSave={handleSave} />;
+  return <ExperimentForm onSave={handleSave} preFetchService={preFetchService} />;
 };
 
 export default NewExperiment;
