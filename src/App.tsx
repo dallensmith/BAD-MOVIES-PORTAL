@@ -9,6 +9,7 @@ import {
   PeoplePage, 
   SettingsPage 
 } from './pages';
+import PocketBaseTest from './pages/PocketBaseTest';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="experiments/new" element={<NewExperiment />} />
           <Route path="people" element={<PeoplePage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="pocketbase-test" element={<PocketBaseTest />} />
         </Route>
       </Routes>
     </Router>

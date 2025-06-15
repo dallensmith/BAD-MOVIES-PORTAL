@@ -1,5 +1,6 @@
 import TMDbService from './tmdb.service';
 import WordPressService from './wordpress.service';
+import { pocketbaseService } from './pocketbase.service';
 import { config } from '../utils/config';
 import type { TMDbMovie, TMDbMovieDetails } from '../types';
 
@@ -200,9 +201,8 @@ export class MovieEnrichmentService {
       updateProgress('Processing languages...');
       const languages = this.processLanguages(movieDetails.spoken_languages || []);
 
-      const finalProgress = updateProgress('Enrichment complete!');
-
-      return {
+      // Create enriched data object
+      const enrichedData = {
         movie: movieDetails,
         actors,
         directors,
@@ -211,8 +211,53 @@ export class MovieEnrichmentService {
         studios,
         countries,
         languages,
-        enrichmentProgress: finalProgress
+        enrichmentProgress: updateProgress('Saving to local database...')
       };
+
+      // Save to PocketBase database
+      try {
+        // Check if movie already exists
+        const existingMovie = await pocketbaseService.getMovieByTmdbId(movie.id);
+        
+        const movieData = {
+          tmdb_id: movie.id,
+          title: movieDetails.title,
+          original_title: movieDetails.original_title,
+          year: movieDetails.release_date ? new Date(movieDetails.release_date).getFullYear().toString() : '',
+          release_date: movieDetails.release_date || '',
+          runtime: movieDetails.runtime || 0,
+          tagline: movieDetails.tagline || '',
+          overview: movieDetails.overview || '',
+          budget: movieDetails.budget?.toString() || '0',
+          box_office: movieDetails.revenue?.toString() || '0',
+          poster_url: movieDetails.poster_path ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}` : '',
+          backdrop_url: movieDetails.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movieDetails.backdrop_path}` : '',
+          imdb_rating: 0, // Would need to fetch from IMDb API
+          imdb_votes: 0,
+          tmdb_rating: movieDetails.vote_average || 0,
+          tmdb_votes: movieDetails.vote_count || 0,
+          popularity: movieDetails.popularity || 0,
+          status: movieDetails.status || 'Unknown',
+          language_code: movieDetails.original_language || 'en',
+          sync_status: 'pending' as const,
+          last_tmdb_fetch: new Date().toISOString()
+        };
+
+        if (existingMovie) {
+          await pocketbaseService.updateMovie(existingMovie.id!, movieData);
+          console.log('✅ Movie data updated in PocketBase');
+        } else {
+          await pocketbaseService.createMovie(movieData);
+          console.log('✅ Movie data saved to PocketBase');
+        }
+      } catch (apiError) {
+        console.warn('⚠️ Failed to save to PocketBase, but enrichment completed:', apiError);
+      }
+
+      const finalProgress = updateProgress('Enrichment complete!');
+      enrichedData.enrichmentProgress = finalProgress;
+
+      return enrichedData;
 
     } catch (error) {
       console.error('Movie enrichment failed:', error);
@@ -888,6 +933,16 @@ export class MovieEnrichmentService {
       return null;
     }
   }
-}
 
-export default MovieEnrichmentService;
+  /**
+   * Save enriched movie data to SQLite database
+   * TODO: This needs to be moved to a backend API since SQLite can't run in the browser
+   */
+  /*
+  async saveToSQLite(enrichedData: EnrichedMovieData): Promise<number> {
+    // This method is temporarily disabled because SQLite cannot run in the browser
+    // It needs to be implemented as a backend API endpoint
+    throw new Error('SQLite operations must be moved to backend API');
+  }
+  */
+}

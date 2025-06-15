@@ -1,4 +1,4 @@
-import MovieEnrichmentService from './movie-enrichment.service';
+import { MovieEnrichmentService } from './movie-enrichment.service';
 import type { TMDbMovie, MovieSelectionData, TMDbMovieDetails } from '../types';
 
 // Define the enriched data structure to match what the enrichment service returns

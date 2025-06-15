@@ -1,5 +1,5 @@
 import WordPressServiceSingleton from './wordpress.singleton';
-import MovieEnrichmentService from './movie-enrichment.service';
+import { MovieEnrichmentService } from './movie-enrichment.service';
 import MoviePreFetchService from './movie-prefetch.service';
 import type { MovieSelectionData, Movie } from '../types';
 
